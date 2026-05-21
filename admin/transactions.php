@@ -5,30 +5,30 @@ requireAdmin();
 $pdo = getDB();
 
 $filter = sanitize($_GET['filter'] ?? 'all');
+$search = sanitize($_GET['search'] ?? '');
 $page = max(1,(int)($_GET['page'] ?? 1));
 $perPage = 30; $offset = ($page-1)*$perPage;
 
-$where = $filter !== 'all' ? "WHERE d.status='$filter'" : '';
-$total = $pdo->query("SELECT COUNT(*) FROM donations d $where")->fetchColumn();
+$conditions = [];
+$params = [];
+if ($filter !== 'all') { $conditions[] = "d.status=?"; $params[] = $filter; }
+if ($search) {
+    $conditions[] = "(d.donor_name LIKE ? OR d.reference LIKE ? OR c.title LIKE ? OR d.operator LIKE ?)";
+    $params = array_merge($params, ["%$search%", "%$search%", "%$search%", "%$search%"]);
+}
+$where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+$countStmt = $pdo->prepare("SELECT COUNT(*) FROM donations d JOIN campaigns c ON d.campaign_id=c.id $where");
+$countStmt->execute($params);
+$total = $countStmt->fetchColumn();
 $pages = ceil($total/$perPage);
 
-$stmt = $pdo->query("SELECT d.*, c.title as campaign_title FROM donations d JOIN campaigns c ON d.campaign_id=c.id $where ORDER BY d.created_at DESC LIMIT $perPage OFFSET $offset");
-$list = $stmt->fetchAll();
+$listStmt = $pdo->prepare("SELECT d.*, c.title as campaign_title FROM donations d JOIN campaigns c ON d.campaign_id=c.id $where ORDER BY d.created_at DESC LIMIT $perPage OFFSET $offset");
+$listStmt->execute($params);
+$list = $listStmt->fetchAll();
 
 require_once __DIR__ . '/../includes/admin_layout.php';
 ?>
-
-<div class="page-header d-flex justify-content-between align-items-center">
-  <div><h1 class="page-title">Transactions</h1><p class="page-subtitle"><?= number_format($total,0,',',' ') ?> transactions</p></div>
-  <div class="d-flex gap-2 flex-wrap">
-    <?php foreach(['all'=>'Toutes','success'=>'Confirmées','pending'=>'En attente','failed'=>'Échouées'] as $f=>$l): ?>
-      <a href="?filter=<?=$f?>" class="btn-sm-kotiza <?=$filter===$f?'btn-primary-sm':''?>" style="<?=$filter!==$f?'background:var(--bg-card);color:var(--text);border:1px solid var(--border);':''?>"><?=$l?></a>
-    <?php endforeach; ?>
-    <a href="?filter=<?=$filter?>&export=csv" class="btn-sm-kotiza" style="background:rgba(67,217,173,0.1);color:var(--accent);border:1px solid rgba(67,217,173,0.3);">
-      <i class="bi bi-download"></i> Exporter CSV
-    </a>
-  </div>
-</div>
 
 <?php
 if (isset($_GET['export']) && $_GET['export'] === 'csv') {
@@ -37,13 +37,42 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     $out = fopen('php://output','w');
     fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
     fputcsv($out, ['ID','Date','Donateur','Email','Campagne','Montant','Devise','Opérateur','Pays','Statut','Transaction ID'], ';');
-    $all = $pdo->query("SELECT d.*, c.title as campaign_title FROM donations d JOIN campaigns c ON d.campaign_id=c.id $where ORDER BY d.created_at DESC")->fetchAll();
-    foreach ($all as $d) {
+    $exportStmt = $pdo->prepare("SELECT d.*, c.title as campaign_title FROM donations d JOIN campaigns c ON d.campaign_id=c.id $where ORDER BY d.created_at DESC");
+    $exportStmt->execute($params);
+    foreach ($exportStmt->fetchAll() as $d) {
         fputcsv($out, [$d['id'],date('d/m/Y H:i',strtotime($d['created_at'])),$d['donor_name'],$d['donor_email'],$d['campaign_title'],$d['amount'],$d['currency'],$d['operator'],$d['country_code'],$d['status'],$d['transaction_id']], ';');
     }
     fclose($out); exit;
 }
 ?>
+
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+  <div><h1 class="page-title">Transactions</h1><p class="page-subtitle"><?= number_format($total,0,',',' ') ?> résultats</p></div>
+  <div class="d-flex gap-2 flex-wrap">
+    <?php foreach(['all'=>'Toutes','success'=>'Confirmées','pending'=>'En attente','failed'=>'Échouées'] as $f=>$l): ?>
+      <a href="?filter=<?=$f?>&search=<?= urlencode($search) ?>" class="btn-sm-kotiza <?=$filter===$f?'btn-primary-sm':''?>" style="<?=$filter!==$f?'background:var(--bg-card);color:var(--text);border:1px solid var(--border);':''?>"><?=$l?></a>
+    <?php endforeach; ?>
+    <a href="?filter=<?=$filter?>&search=<?= urlencode($search) ?>&export=csv" class="btn-sm-kotiza" style="background:rgba(67,217,173,0.1);color:var(--accent);border:1px solid rgba(67,217,173,0.3);">
+      <i class="bi bi-download"></i> CSV
+    </a>
+  </div>
+</div>
+
+<div class="card-kotiza mb-4">
+  <div class="card-body" style="padding:1rem 1.5rem;">
+    <form method="GET" class="d-flex gap-2 flex-wrap">
+      <input type="hidden" name="filter" value="<?= $filter ?>">
+      <div class="input-group-kotiza" style="flex:1;min-width:220px;">
+        <i class="bi bi-search input-icon"></i>
+        <input type="text" name="search" class="form-control-kotiza form-control" placeholder="Donateur, cagnotte, opérateur, référence..." value="<?= $search ?>">
+      </div>
+      <button type="submit" class="btn-sm-kotiza btn-primary-sm" style="padding:0.6rem 1.2rem;"><i class="bi bi-search me-1"></i>Rechercher</button>
+      <?php if ($search): ?>
+        <a href="?filter=<?=$filter?>" class="btn-sm-kotiza" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:0.6rem 1rem;"><i class="bi bi-x-lg"></i></a>
+      <?php endif; ?>
+    </form>
+  </div>
+</div>
 
 <div class="card-kotiza">
   <div class="card-body p-0">
@@ -81,7 +110,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
 <?php if ($pages > 1): ?>
 <div class="d-flex justify-content-center gap-2 mt-4">
   <?php for($i=1;$i<=$pages;$i++): ?>
-    <a href="?page=<?=$i?>&filter=<?=$filter?>" class="btn-sm-kotiza <?=$i===$page?'btn-primary-sm':''?>" style="<?=$i!==$page?'background:var(--bg-card);color:var(--text);border:1px solid var(--border);':''?>"><?=$i?></a>
+    <a href="?page=<?=$i?>&filter=<?=$filter?>&search=<?= urlencode($search) ?>" class="btn-sm-kotiza <?=$i===$page?'btn-primary-sm':''?>" style="<?=$i!==$page?'background:var(--bg-card);color:var(--text);border:1px solid var(--border);':''?>"><?=$i?></a>
   <?php endfor; ?>
 </div>
 <?php endif; ?>

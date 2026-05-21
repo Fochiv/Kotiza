@@ -24,19 +24,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf($_POST['csrf_token'] ?? 
 }
 
 $filter = sanitize($_GET['filter'] ?? 'pending');
-$where = $filter !== 'all' ? "WHERE k.status='$filter'" : '';
-$stmt = $pdo->query("SELECT k.*, u.full_name, u.email FROM kyc k JOIN users u ON k.user_id=u.id $where ORDER BY k.submitted_at DESC LIMIT 100");
+$search = sanitize($_GET['search'] ?? '');
+
+$conditions = [];
+$params = [];
+if ($filter !== 'all') { $conditions[] = "k.status=?"; $params[] = $filter; }
+if ($search) {
+    $conditions[] = "(u.full_name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)";
+    $params = array_merge($params, ["%$search%", "%$search%", "%$search%"]);
+}
+$where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+$stmt = $pdo->prepare("SELECT k.*, u.full_name, u.email FROM kyc k JOIN users u ON k.user_id=u.id $where ORDER BY k.submitted_at DESC LIMIT 100");
+$stmt->execute($params);
 $list = $stmt->fetchAll();
 
 require_once __DIR__ . '/../includes/admin_layout.php';
 ?>
 
-<div class="page-header d-flex justify-content-between align-items-center">
-  <div><h1 class="page-title">Vérification KYC</h1></div>
-  <div class="d-flex gap-2">
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+  <div><h1 class="page-title">Vérification KYC</h1><p class="page-subtitle"><?= count($list) ?> résultat(s)</p></div>
+  <div class="d-flex gap-2 flex-wrap">
     <?php foreach(['pending'=>'En attente','approved'=>'Validés','rejected'=>'Refusés','all'=>'Tous'] as $f=>$label): ?>
-      <a href="?filter=<?=$f?>" class="btn-sm-kotiza <?=$filter===$f?'btn-primary-sm':''?>" style="<?=$filter!==$f?'background:var(--bg-card);color:var(--text);border:1px solid var(--border);':''?>"><?=$label?></a>
+      <a href="?filter=<?=$f?>&search=<?= urlencode($search) ?>" class="btn-sm-kotiza <?=$filter===$f?'btn-primary-sm':''?>" style="<?=$filter!==$f?'background:var(--bg-card);color:var(--text);border:1px solid var(--border);':''?>"><?=$label?></a>
     <?php endforeach; ?>
+  </div>
+</div>
+
+<div class="card-kotiza mb-4">
+  <div class="card-body" style="padding:1rem 1.5rem;">
+    <form method="GET" class="d-flex gap-2 flex-wrap">
+      <input type="hidden" name="filter" value="<?= $filter ?>">
+      <div class="input-group-kotiza" style="flex:1;min-width:220px;">
+        <i class="bi bi-search input-icon"></i>
+        <input type="text" name="search" class="form-control-kotiza form-control" placeholder="Nom, email, téléphone..." value="<?= $search ?>">
+      </div>
+      <button type="submit" class="btn-sm-kotiza btn-primary-sm" style="padding:0.6rem 1.2rem;"><i class="bi bi-search me-1"></i>Rechercher</button>
+      <?php if ($search): ?>
+        <a href="?filter=<?=$filter?>" class="btn-sm-kotiza" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:0.6rem 1rem;"><i class="bi bi-x-lg"></i></a>
+      <?php endif; ?>
+    </form>
   </div>
 </div>
 
@@ -63,12 +90,12 @@ require_once __DIR__ . '/../includes/admin_layout.php';
 
         <div class="row g-2 mb-3">
           <?php foreach ([
-            ['id_card_front','🪪 Recto CNI'],
-            ['id_card_back','🪪 Verso CNI'],
-            ['selfie','🤳 Selfie'],
+            ['id_card_front','<i class="bi bi-card-text me-1"></i>Recto CNI'],
+            ['id_card_back','<i class="bi bi-card-text me-1"></i>Verso CNI'],
+            ['selfie','<i class="bi bi-camera-fill me-1"></i>Selfie'],
           ] as [$field, $label]): ?>
           <div class="col-4">
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;"><?= $label ?></div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;"><?php echo $label; ?></div>
             <?php if ($k[$field] && file_exists(UPLOAD_KYC_DIR . $k[$field])): ?>
               <?php $ext = strtolower(pathinfo($k[$field], PATHINFO_EXTENSION)); ?>
               <?php if ($ext === 'pdf'): ?>

@@ -33,8 +33,24 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
             <div style="font-size:0.8rem;color:var(--text-muted);">Pays couverts</div>
           </div>
           <div>
-            <div style="font-size:1.4rem;font-weight:900;color:var(--accent);">MTN • Orange • Wave</div>
-            <div style="font-size:0.8rem;color:var(--text-muted);">Opérateurs supportés</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">Opérateurs supportés</div>
+            <div class="d-flex flex-wrap gap-2">
+              <?php
+              $operators = [
+                ['MTN',       '#ffcb05','#000'],
+                ['Orange',    '#ff6600','#fff'],
+                ['Wave',      '#1dc8ff','#000'],
+                ['Moov',      '#0057a8','#fff'],
+                ['Airtel',    '#e3001b','#fff'],
+                ['Free',      '#cd1127','#fff'],
+                ['Wizall',    '#6c63ff','#fff'],
+                ['Africell',  '#009b3a','#fff'],
+              ];
+              foreach ($operators as [$name, $bg, $color]):
+              ?>
+              <span style="background:<?= $bg ?>;color:<?= $color ?>;font-size:0.7rem;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0.3px;"><?= $name ?></span>
+              <?php endforeach; ?>
+            </div>
           </div>
         </div>
       </div>

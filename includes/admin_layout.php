@@ -25,7 +25,7 @@ $stats = getCampaignStats();
 <!-- Admin sidebar -->
 <aside class="sidebar admin-sidebar">
   <div class="sidebar-brand">
-    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#6c63ff,#43d9ad);display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🛡️</div>
+    <img src="/logo.png" alt="Kotiza" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;">
     <span class="sidebar-brand-name">Admin</span>
   </div>
 

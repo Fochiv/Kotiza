@@ -12,8 +12,8 @@ define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/webp']);
 define('ALLOWED_KYC_TYPES', ['image/jpeg', 'image/png', 'application/pdf']);
 define('UPLOAD_CAMPAIGNS_DIR', __DIR__ . '/../uploads/campaigns/');
 define('UPLOAD_KYC_DIR', __DIR__ . '/../uploads/kyc/');
-define('ADMIN_EMAIL', 'admin@kotiza.com');
-define('ADMIN_DEFAULT_PASSWORD', 'Admin@123');
+define('ADMIN_EMAIL', 'aldofoch@gmail.com');
+define('ADMIN_DEFAULT_PASSWORD', '1214161820@Ben');
 define('SESSION_LIFETIME', 3600 * 24);
 define('DB_PATH', __DIR__ . '/../db/kotiza.db');
 

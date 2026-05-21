@@ -11,7 +11,7 @@
           <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
           <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
           <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="social-link"><i class="bi bi-whatsapp"></i></a>
+          <a href="https://wa.me/237658547295" target="_blank" class="social-link"><i class="bi bi-whatsapp"></i></a>
           <a href="#" class="social-link"><i class="bi bi-tiktok"></i></a>
         </div>
       </div>
@@ -33,7 +33,9 @@
         <h6 class="footer-heading" data-i18n="footer_contact">Contact</h6>
         <p class="footer-desc">
           <i class="bi bi-envelope me-2"></i>contact@kotiza.com<br>
-          <i class="bi bi-whatsapp me-2"></i>+237 6XX XXX XXX<br>
+          <a href="https://wa.me/237658547295" target="_blank" style="color:inherit;text-decoration:none;">
+            <i class="bi bi-whatsapp me-2" style="color:#25d366;"></i>+237 658 547 295
+          </a><br>
           <i class="bi bi-geo-alt me-2"></i>Yaoundé, Cameroun
         </p>
       </div>

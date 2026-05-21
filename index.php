@@ -13,7 +13,7 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
   <div class="container position-relative z-1">
     <div class="row align-items-center g-5">
       <div class="col-lg-6">
-        <span class="section-badge">🚀 Plateforme N°1 en Afrique</span>
+        <span class="section-badge"><i class="bi bi-rocket-takeoff-fill me-1"></i> Plateforme N°1 en Afrique</span>
         <h1 class="hero-title" data-i18n="hero_title">Collectons Ensemble</h1>
         <p class="hero-subtitle" data-i18n="hero_subtitle">Créez votre cagnotte, partagez votre cause et recevez des dons via Mobile Money en toute sécurité.</p>
         <div class="d-flex flex-wrap gap-3">
@@ -42,7 +42,9 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
       <div class="col-lg-6 hero-visual">
         <div class="hero-card">
           <div class="d-flex align-items-center gap-3 mb-3">
-            <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#6c63ff,#43d9ad);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">💚</div>
+            <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#6c63ff,#43d9ad);display:flex;align-items:center;justify-content:center;">
+              <i class="bi bi-heart-fill" style="font-size:1.4rem;color:#fff;"></i>
+            </div>
             <div>
               <div style="font-weight:700;color:var(--text);">Aide médicale</div>
               <div style="font-size:0.8rem;color:var(--text-muted);">Santé · Yaoundé</div>
@@ -60,7 +62,7 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
           </div>
         </div>
 
-        <div style="margin-top:-20px;margin-left:40px;" class="hero-card" style="animation-delay:0.5s;">
+        <div style="margin-top:-20px;margin-left:40px;" class="hero-card">
           <div class="d-flex align-items-center gap-2">
             <div class="donor-avatar" style="width:36px;height:36px;font-size:0.85rem;">M</div>
             <div>
@@ -110,7 +112,7 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
 <!-- HOW IT WORKS -->
 <section class="how-section" id="how">
   <div class="container text-center">
-    <span class="section-badge">Simple & Rapide</span>
+    <span class="section-badge">Simple &amp; Rapide</span>
     <h2 class="section-title" data-i18n="how_title">Comment ça marche ?</h2>
     <p class="section-subtitle" data-i18n="how_subtitle">3 étapes pour lancer votre collecte</p>
 
@@ -118,7 +120,7 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
       <div class="col-md-4 fade-in">
         <div class="step-card">
           <div class="step-number">1</div>
-          <div class="step-icon">✏️</div>
+          <div class="step-icon"><i class="bi bi-pencil-fill"></i></div>
           <h4 class="step-title" data-i18n="how_step1_title">Créez</h4>
           <p class="step-desc" data-i18n="how_step1_desc">Créez votre cagnotte en quelques minutes avec une description et un objectif.</p>
         </div>
@@ -126,7 +128,7 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
       <div class="col-md-4 fade-in">
         <div class="step-card">
           <div class="step-number">2</div>
-          <div class="step-icon">📲</div>
+          <div class="step-icon"><i class="bi bi-share-fill"></i></div>
           <h4 class="step-title" data-i18n="how_step2_title">Partagez</h4>
           <p class="step-desc" data-i18n="how_step2_desc">Partagez votre lien unique sur WhatsApp, Facebook, Telegram.</p>
         </div>
@@ -134,7 +136,7 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
       <div class="col-md-4 fade-in">
         <div class="step-card">
           <div class="step-number">3</div>
-          <div class="step-icon">💰</div>
+          <div class="step-icon"><i class="bi bi-cash-coin"></i></div>
           <h4 class="step-title" data-i18n="how_step3_title">Collectez</h4>
           <p class="step-desc" data-i18n="how_step3_desc">Recevez les dons via Mobile Money et retirez votre argent facilement.</p>
         </div>
@@ -147,7 +149,7 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
 <section class="py-5" id="featured" style="background:var(--bg2);">
   <div class="container">
     <div class="text-center mb-5">
-      <span class="section-badge">✅ Succès</span>
+      <span class="section-badge"><i class="bi bi-check-circle-fill me-1"></i> Succès</span>
       <h2 class="section-title" data-i18n="featured_title">Cagnottes terminées</h2>
       <p class="section-subtitle" data-i18n="featured_subtitle">Des projets financés avec succès grâce à votre générosité</p>
     </div>
@@ -155,14 +157,24 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
     <div class="row g-4">
       <?php foreach ($featured as $c):
         $pct = progressPercent($c['collected_amount'], $c['goal_amount']);
-        $emoji = match($c['category']) {
-          'Santé' => '🏥', 'Éducation' => '📚', 'Urgence' => '🚨',
-          'Humanitaire' => '🤝', 'Projets' => '💡', default => '🎯'
+        $catIcon = match($c['category']) {
+          'Santé'        => 'bi-hospital',
+          'Éducation'    => 'bi-book-fill',
+          'Urgence'      => 'bi-exclamation-triangle-fill',
+          'Humanitaire'  => 'bi-people-fill',
+          'Projets'      => 'bi-lightbulb-fill',
+          default        => 'bi-star-fill'
         };
       ?>
       <div class="col-sm-6 col-lg-4 fade-in">
         <div class="card-kotiza">
-          <div class="card-img-placeholder"><?= $emoji ?></div>
+          <?php if (!empty($c['cover_image']) && file_exists(__DIR__ . '/uploads/campaigns/' . $c['cover_image'])): ?>
+            <div style="height:200px;overflow:hidden;border-radius:12px 12px 0 0;">
+              <img src="/uploads/campaigns/<?= sanitize($c['cover_image']) ?>" alt="<?= sanitize($c['title']) ?>" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+          <?php else: ?>
+            <div class="card-img-placeholder"><i class="bi <?= $catIcon ?>" style="font-size:2.5rem;color:var(--primary);"></i></div>
+          <?php endif; ?>
           <div class="card-body">
             <span class="badge-kotiza badge-info mb-2"><?= sanitize($c['category']) ?></span>
             <h5 class="card-title"><?= sanitize($c['title']) ?></h5>
@@ -195,21 +207,26 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
 <section class="categories-section" id="categories">
   <div class="container">
     <div class="text-center mb-5">
-      <span class="section-badge">🗂 Catégories</span>
+      <span class="section-badge"><i class="bi bi-grid-fill me-1"></i> Catégories</span>
       <h2 class="section-title" data-i18n="categories_title">Explorez par catégorie</h2>
     </div>
     <div class="row g-3">
       <?php
       $cats = [
-        ['Santé','🏥','cat_health'],['Éducation','📚','cat_education'],['Urgence','🚨','cat_emergency'],
-        ['Projets','💡','cat_projects'],['Humanitaire','🤝','cat_humanitarian'],['Religion','🕌','cat_religion'],
-        ['Sports','⚽','cat_sports'],['Arts & Culture','🎨','cat_arts'],
+        ['Santé',        'bi-hospital',                  'cat_health'],
+        ['Éducation',    'bi-book-fill',                 'cat_education'],
+        ['Urgence',      'bi-exclamation-triangle-fill', 'cat_emergency'],
+        ['Projets',      'bi-lightbulb-fill',            'cat_projects'],
+        ['Humanitaire',  'bi-people-fill',               'cat_humanitarian'],
+        ['Religion',     'bi-moon-stars-fill',           'cat_religion'],
+        ['Sports',       'bi-trophy-fill',               'cat_sports'],
+        ['Arts & Culture','bi-palette-fill',             'cat_arts'],
       ];
       foreach ($cats as [$name, $icon, $key]):
       ?>
       <div class="col-6 col-sm-4 col-md-3 col-lg-3 fade-in">
         <a href="/auth/register.php" class="category-card">
-          <span class="category-icon"><?= $icon ?></span>
+          <span class="category-icon"><i class="bi <?= $icon ?>"></i></span>
           <span class="category-name" data-i18n="<?= $key ?>"><?= $name ?></span>
         </a>
       </div>
@@ -222,7 +239,7 @@ $featured = $pdo->query("SELECT * FROM campaigns WHERE status='completed' ORDER 
 <section class="testimonials-section" id="testimonials">
   <div class="container">
     <div class="text-center mb-5">
-      <span class="section-badge">💬 Témoignages</span>
+      <span class="section-badge"><i class="bi bi-chat-quote-fill me-1"></i> Témoignages</span>
       <h2 class="section-title" data-i18n="testimonials_title">Ce qu'ils disent de nous</h2>
     </div>
 

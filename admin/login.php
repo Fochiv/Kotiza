@@ -55,7 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="container">
     <div class="auth-card" style="max-width:420px;">
       <div class="auth-logo">
-        <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#6c63ff,#43d9ad);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 12px;">🛡️</div>
+        <img src="/logo.png" alt="Kotiza" style="width:72px;height:72px;border-radius:18px;object-fit:cover;margin:0 auto 12px;display:block;box-shadow:0 8px 24px rgba(108,99,255,0.3);">
+        <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#6c63ff,#43d9ad);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+          <i class="bi bi-shield-lock-fill" style="font-size:1.6rem;color:#fff;"></i>
+        </div>
         <div style="font-size:1.5rem;font-weight:900;background:linear-gradient(135deg,#6c63ff,#43d9ad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Administration</div>
         <div style="color:var(--text-muted);font-size:0.85rem;">Accès réservé aux administrateurs</div>
       </div>

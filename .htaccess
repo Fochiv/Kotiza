@@ -1,0 +1,14 @@
+Options -Indexes
+RewriteEngine On
+
+# Route uploads directly
+RewriteRule ^uploads/(.*)$ uploads/$1 [L]
+
+# Route assets directly
+RewriteRule ^assets/(.*)$ assets/$1 [L]
+RewriteRule ^logo\.png$ logo.png [L]
+
+# Remove .php extension
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [L]

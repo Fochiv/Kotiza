@@ -1,0 +1,189 @@
+Tu es un développeur fullstack senior spécialisé en PHP natif, MySQL et JavaScript vanilla. 
+Ta mission est de développer de A à Z une plateforme web complète de crowdfunding (collecte de fonds), dont le nom est Kotiza.
+OBJECTIF DU PROJET
+Créer une plateforme web sécurisée, fiable et scalable permettant à des utilisateurs de :
+- Créer des cagnottes en ligne
+- Recevoir des dons via Mobile Money ou carte bancaire
+- Retirer leur argent (après vérification d'identité KYC)
+L'administrateur prélève automatiquement une commission de 10% sur chaque retrait.
+STACK TECHNIQUE
+- **Frontend** : HTML5, CSS3, JavaScript vanilla, Bootstrap 5
+- **Backend** : PHP natif (aucun framework)
+- **Base de données** : MySQL (Tu peux aussi ecrire SQLite si tu tester sur ton interface )
+- **Environnement** : Compatible WampServer (Windows)
+- **Paiements** : API Ashtechpay (Mobile Money Afrique) + carte bancaire
+STRUCTURE DES FICHIERS
+Génère une architecture claire et organisée (Avec acces a la page differente de celle utilisateur)
+SÉCURITÉ (OBLIGATOIRE)
+- **PDO + Prepared Statements** sur toutes les requêtes SQL (zéro requête concaténée)
+- Validation stricte côté **client (JS)** ET côté **serveur (PHP)**
+- Upload de fichiers sécurisés 
+PAGE D'ACCUEIL (index.php)
+Créer une page d'accueil moderne, professionnelle et convaincante comprenant :
+1. **Navbar** : Logo, nom du site, menu (Accueil, Cagnottes, Comment ça marche, Temoignages, Connexion/Inscription), sélecteur de **langue** (FR/EN) et **thème** (clair/sombre)
+2. **Hero Section** : Slogan fort (Par exemple : Collectons essemble, Ou bien Donnez Recevez Réalisez), description, CTA "Créer ma cagnotte" et "Voir les cagnottes"
+Dans ‘Voir les cagnottes’ tu cree des cagnottes (minimum 12 cagnottes) déjà terminées
+3. **Section Chiffres clés** (conteurs animés au scroll) :
+   - 200+ cagnottes créées
+   - 5000+ donateurs
+   - 98% de satisfaction
+   - 15M FCFA collectés
+4. **Section "Comment ça marche"** : 3 étapes illustrées (Créer → Partager → Collecter)
+5. **Section Cagnottes en vedette** : Affichage dynamique des dernières cagnottes actives (depuis la DB)
+6. **Section Témoignages** : Slider avec avis utilisateurs
+7. **Section Catégories** : Grille des catégories (Santé, Éducation, Urgence, Projets,Humanitaire, etc.)
+8. **Footer** : Liens utiles, réseaux sociaux, mentions légales
+AUTHENTIFICATION
+### Inscription 
+Champs : Nom complet, Email, Téléphone, Mot de passe, Confirmation mot de passe
+- Validation complète client + serveur
+- Vérification unicité email/téléphone
+
+### Connexion
+- Formulaire email ou téléphone + mot de passe
+- Protection brute force (limite 5 tentatives, blocage temporaire 15 min)
+### Déconnexion (`logout.php`)
+---
+## KYC — VÉRIFICATION D'IDENTITÉ
+> Obligatoire avant tout retrait. L'utilisateur peut créer des cagnottes et recevoir des dons sans KYC.
+### Formulaire KYC (dans dashboard utilisateur)
+L'utilisateur doit uploader :
+1. Photo **recto** de la carte d'identité nationale
+2. Photo **verso** de la carte d'identité nationale
+3. **Selfie** tenant la carte en main
+### Règles d'upload
+- Formats acceptés : JPG, PNG, PDF
+- Taille max par fichier : 5 Mo
+
+### Statuts KYC
+- `pending` (en attente) — état par défaut après soumission
+- `approved` (validé) — par l'admin
+- `rejected` (refusé) — par l'admin avec motif obligatoire
+## 💰 WALLET UTILISATEUR
+Chaque utilisateur possède un portefeuille virtuel avec deux soldes distincts :
+
+| Solde | Logique |
+|---|---|
+| `balance_pending` | Don reçu, paiement non encore confirmé |
+| `balance_available` | Paiement confirmé, disponible pour retrait |
+
+**Logique de crédit :**
+1. Don initié → `balance_pending += montant`
+2. Paiement confirmé par API → `balance_pending -= montant` + `balance_available += montant`
+3. Retrait validé → `balance_available -= (montant + commission)`
+
+
+## 🎗️ CAGNOTTES (CAMPAIGNS)
+
+### Création de cagnotte
+Champs :
+- Titre (max 100 caractères)
+- Description (éditeur rich text basique)
+- Image de couverture (upload)
+- Objectif financier (montant en FCFA)
+- Catégorie (liste déroulante) si il y’a pas sa categorie il peut saisir par lui meme
+
+### Page publique cagnotte
+- Image + titre + description
+- **Barre de progression** animée (montant collecté / objectif)
+- Compteur de donateurs
+- Liste des derniers dons (nom ou "Anonyme" + montant + date)
+- Bouton **"Faire un don"**
+- Boutons de **partage** : WhatsApp, Facebook, Telegram,Tiktok
+- **Lien unique** partageable
+## 💳 PAIEMENTS — INTÉGRATION ASHTECHPAY
+### Méthodes supportées
+1. **Mobile Money** (MTN, Orange, Wave, etc.) via API Ashtechpay
+Après validation du formulaire de don et initiation du paiement via l'API :
+- Afficher un compteur dégressif de 8 minutes (08:00 → 00:00) indiquant à l'utilisateur qu'il dispose de ce délai pour valider sa transaction sur son téléphone.
+- Simultanément, lancer une boucle de polling automatique qui interroge le statut de la transaction toutes les 3 secondes via le webhook/endpoint de l'API de paiement.
+- Dès que le statut retourné passe à "validé" :
+  * Mettre à jour le statut dans la base de données (côté admin ET côté utilisateur)
+  * Arrêter le polling
+  * Rediriger automatiquement vers la PAGE DE REMERCIEMENT
+- Si le statut passe à "échoué" ou si le délai de 8 minutes expire sans confirmation :
+  * Afficher un message d'erreur clair
+  * Mettre le statut à "échoué" dans la base de données
+  * Permettre à l'utilisateur de réessayer
+- Ce mécanisme doit fonctionner entièrement de manière automatique, sans action manuelle de l'utilisateur.
+2. **Carte bancaire**  si l’utilisateur veut payer par carte bancaire par exemple Euro ou Dollar Contacter le createur de la cagnotte directement via son numero Whatsapp apres avoir rempli le formulaire
+## Confirmation avant paiement
+Afficher un résumé de transaction des infos importantes
+## 🤝 DONS Stocker pour chaque don (A noter qu’on n’a pas besoin de créer un compte pour faire un don) : 
+- Montant
+- Donateur (connecté ou anonyme) 
+- Campagne liée - Date et heure 
+- Statut du paiement
+## 🏧 RETRAITS ### 
+Processus utilisateur
+ 1. Vérification KYC `approved` (sinon blocage avec message explicatif) 
+2. Vérification `balance_available >= montant demandé` 
+3. Formulaire : montant souhaité + moyen de réception (numéro Mobile Money) 
+4. Affichage en temps réel : montant brut, commission 10%, montant net reçu 
+5. Confirmation → création demande statut `pending`
+
+### Processus admin 
+Un fois la demande de retrait envoyee par l’utilisateur, l’admin peut valider le retrait ou non 
+Si il valide le retrait de l’utilisateur, le statut change sur la page admin , dans la bd, sur la page utilisateur aussi ,….  Et si il Refuse → motif obligatoire + remise du solde.
+DASHBOARD UTILISATEUR 
+
+Pages :
+- **Vue d'ensemble** : Solde disponible, solde en attente, total collecté, nombre de dons reçus
+- **Mes cagnottes** : Liste avec statut, montant collecté, boutons Modifier/Supprimer
+- **Créer une cagnotte** : Formulaire complet
+- **Mes dons reçus** : Tableau paginé
+- **Mon portefeuille** : Soldes + historique des mouvements
+- **Demande de retrait** : Formulaire avec calcul commission en direct
+- **Mes retraits** : Historique + statuts
+- **Vérification KYC** : Formulaire upload + statut actuel
+DASHBOARD ADMIN 
+On ne pourra pas acceder a la page admin depuis la page utilisateur pour des raisons de securites
+### Pages admin :
+
+**1. Tableau de bord (statistiques globales)**
+- Total dons collectés (tous temps + ce mois)
+- Total retraits effectués
+- Commissions gagnées
+- Nombre d'utilisateurs inscrits
+- Cagnottes actives 
+- Graphiques (Chart.js)
+
+**2. Gestion des utilisateurs**
+- Liste paginée + recherche
+- Voir profil complet
+- Activer / désactiver un compte
+- Voir le KYC soumis (affichage des photos)
+- **Valider ou refuser le KYC** (avec motif si refus)
+
+**3. Gestion des cagnottes**
+- Liste toutes cagnottes
+- Supprimer une cagnotte
+
+**4. Gestion des dons / transactions**
+- Voir toutes les transactions avec filtres (date, statut, montant)
+-Avec moyen de telecharger le fichier complet 
+**5. Gestion des retraits** *(Le retrait est fait manuellement par l’admin sur ashtechpay)
+- Liste des demandes en attente (Bouton copier devant les numeros qui demandent le retrait)
+- **Valider** ou **Refuser** avec motif
+- Historique complet des retraits
+---
+## 📢 PARTAGE SOCIAL
+Sur chaque page de cagnotte, afficher 3 boutons :
+- **WhatsApp** : `https://wa.me/?text=...`
+- **Facebook** : `https://www.facebook.com/sharer/...`
+- **Telegram** : `https://t.me/share/url?...`
+Chaque cagnotte possède un `unique_slug` généré à la création (ex: `/campaign/aide-pour-soins-a7f3`).
+## 🌍 MULTILINGUE (FR / EN)
+-	La traduction se fait sans avoir besoin de recharger la page 
+
+## 🌓 THÈME CLAIR / SOMBRE (Le site a un Thème Sombre de base)
+- Toggle bouton dans la navbar
+- Transition douce entre les thèmes 
+
+## 🎨 DESIGN & UI
+
+- **Responsive** : Mobile-first, compatible tous écrans
+- **Animations légères** : Fade-in au scroll, compteurs animés, transitions fluides
+- **Composants Bootstrap 5** : Cards, Modals, Progress bars, Toasts, Badges
+- **Palette** : Couleurs modernes
+- **Interface professionnelle** : Pas de design générique — soigné, cohérent, mémorable
